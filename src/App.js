@@ -1,6 +1,8 @@
 import React from "react";
 import Keycloak from "keycloak-js";
 
+const apiUrl = 'https://api.localtest.me/'
+
 function LoginButton(props) {
   return (
     <a className="btn btn-outline-primary" href="#" onClick={props.onClick}>
@@ -45,7 +47,11 @@ function Service(props) {
             <li>requires {props.name} role</li>
             <li>uses lukasz/yosoy service</li>
           </ul>
-          <button type="button" className="w-100 btn btn-lg btn-primary" onClick={() => props.onClick(props.name, props.keycloak)}>
+          <button
+            type="button"
+            className="w-100 btn btn-lg btn-primary"
+            onClick={() => props.onClick(props.name, props.keycloak)}
+          >
             Call
           </button>
         </div>
@@ -57,30 +63,46 @@ function Service(props) {
 class Services extends React.Component {
   constructor(props) {
     super(props);
-    this.setState({});
+    this.state = {};
     this.handleApiCall = this.handleApiCall.bind(this);
   }
 
   handleApiCall(service, keycloak) {
-    console.log('About to call ' + service);
-    console.log('Response: ' + keycloak)
-    console.log('Response: ' + keycloak.token)
-    setTimeout(() => {
-      this.setState({response: 'hello ' + ' from ' + service + ' ' +  keycloak.token});
-    }, 7000);
+    fetch(apiUrl + service, {
+      headers: new Headers({
+        Authorization: "Bearer " + keycloak.token,
+      }),
+    })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.setState({
+          response:
+            "got response from " + service + ":\n" + JSON.stringify(responseJson, null, 2),
+        });
+      });
   }
 
   render() {
     return (
       <div>
-      <div className="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        <Service name="cocinera" onClick={this.handleApiCall} keycloak={this.props.keycloak} />
-        <Service name="camarero" onClick={this.handleApiCall} keycloak={this.props.keycloak} />
-        <Service name="doncella" onClick={this.handleApiCall} keycloak={this.props.keycloak} />
-      </div>
-      <pre>
-        {this.state?.response}
-      </pre>
+        <div className="row row-cols-1 row-cols-md-3 mb-3 text-center">
+          <Service
+            name="cocinera"
+            onClick={this.handleApiCall}
+            keycloak={this.props.keycloak}
+          />
+          <Service
+            name="camarero"
+            onClick={this.handleApiCall}
+            keycloak={this.props.keycloak}
+          />
+          <Service
+            name="doncella"
+            onClick={this.handleApiCall}
+            keycloak={this.props.keycloak}
+          />
+        </div>
+        <pre>{this.state?.response}</pre>
       </div>
     );
   }
@@ -113,7 +135,6 @@ class App extends React.Component {
             id: userInfo.sub,
           });
         });
-        console.log(keycloak.tokenParsed)
       }
       this.setState({ keycloak: keycloak, authenticated: authenticated });
     });
