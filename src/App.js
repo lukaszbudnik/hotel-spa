@@ -1,9 +1,9 @@
 import React from "react";
 import Keycloak from "keycloak-js";
 
-const apiUrl = 'https://api.localtest.me/'
+const apiUrl = "https://api.localtest.me/";
 
-function LoginButton(props) {
+function SignInButton(props) {
   return (
     <a className="btn btn-outline-primary" href="#" onClick={props.onClick}>
       Sign in
@@ -11,7 +11,7 @@ function LoginButton(props) {
   );
 }
 
-function LogoutButton(props) {
+function SignOutButton(props) {
   return (
     <a className="btn btn-outline-primary" href="#" onClick={props.onClick}>
       Sign out
@@ -19,18 +19,40 @@ function LogoutButton(props) {
   );
 }
 
+function SignInOutButton(props) {
+  if (props.authenticated) {
+    return <SignOutButton onClick={props.signOutClick} />;
+  }
+  return <SignInButton onClick={props.signInClick} />;
+}
+
 function UserGreeting(props) {
-  return <h1 className="display-4">Welcome {props.name}!</h1>;
+  return (
+    <div>
+      <h1 className="display-4">Welcome {props.name}!</h1>{" "}
+      <p className="lead">
+        There are 3 services in this demo, click on each one to see its
+        response.
+      </p>
+      <p className="lead">
+        You have the following roles: {props.roles?.join(", ")}
+      </p>
+    </div>
+  );
 }
 
 function GuestGreeting(props) {
-  return <h1 className="display-4">Please sign in!</h1>;
+  return (
+    <div>
+      <h1 className="display-4">Please sign in!</h1>
+      <p className="lead">Before continuing you need to sign in.</p>
+    </div>
+  );
 }
 
 function Greeting(props) {
-  const authenticated = props.authenticated;
-  if (authenticated) {
-    return <UserGreeting name={props.name} />;
+  if (props.authenticated) {
+    return <UserGreeting name={props.name} roles={props.roles} />;
   }
   return <GuestGreeting />;
 }
@@ -77,12 +99,23 @@ class Services extends React.Component {
       .then((responseJson) => {
         this.setState({
           response:
-            "got response from " + service + ":\n" + JSON.stringify(responseJson, null, 2),
+            "got response from " +
+            service +
+            ":\n" +
+            JSON.stringify(responseJson, null, 2),
+        });
+      })
+      .catch((err) => {
+        this.setState({
+          response: "could not get response from " + service + ":\n" + err,
         });
       });
   }
 
   render() {
+    if (!this.props.authenticated) {
+      return null;
+    }
     return (
       <div>
         <div className="row row-cols-1 row-cols-md-3 mb-3 text-center">
@@ -121,7 +154,7 @@ class App extends React.Component {
   }
 
   handleSignOutClick() {
-    this.setState({ authenticated: false });
+    this.state.keycloak.logout();
   }
 
   componentDidMount() {
@@ -133,6 +166,7 @@ class App extends React.Component {
             name: userInfo.name,
             email: userInfo.email,
             id: userInfo.sub,
+            roles: keycloak.tokenParsed.realm_access.roles,
           });
         });
       }
@@ -141,48 +175,29 @@ class App extends React.Component {
   }
 
   render() {
-    const authenticated = this.state.authenticated;
-    const name = this.state.name;
-
-    let button;
-    if (authenticated) {
-      button = <LogoutButton onClick={this.handleSignOutClick} />;
-    } else {
-      button = <LoginButton onClick={this.handleSignInClick} />;
-    }
-
-    let info;
-    if (authenticated) {
-      info = (
-        <p className="lead">
-          There are 3 services in this demo, click on each one to see its
-          response.
-        </p>
-      );
-    } else {
-      info = <p className="lead">Before continuing you need to sign in.</p>;
-    }
-
-    let services;
-    if (authenticated) {
-      services = <Services keycloak={this.state.keycloak} />;
-    }
-
     return (
       <div>
         <header className="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-body border-bottom shadow-sm">
           <p className="h5 my-0 me-md-auto fw-normal">Hotel</p>
-          {button}
+          <SignInOutButton
+            authenticated={this.state.authenticated}
+            signInClick={this.handleSignInClick}
+            signOutClick={this.handleSignOutClick}
+          />
         </header>
 
         <main className="container">
           <div className="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-            <Greeting authenticated={authenticated} name={name} />
-            {info}
+            <Greeting
+              authenticated={this.state.authenticated}
+              name={this.state.name}
+              roles={this.state.roles}
+            />
           </div>
-
-          {services}
-
+          <Services
+            authenticated={this.state.authenticated}
+            keycloak={this.state.keycloak}
+          />
           <footer className="pt-4 my-md-5 pt-md-5 border-top">
             <div className="row">
               <div className="col-12 col-md">
