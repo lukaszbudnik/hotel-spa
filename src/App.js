@@ -5,7 +5,11 @@ const apiUrl = "https://api.localtest.me/";
 
 function SignInButton(props) {
   return (
-    <a className="btn btn-outline-primary" href="#" onClick={props.onClick}>
+    <a
+      className="btn btn-outline-primary"
+      href="#signin"
+      onClick={props.onClick}
+    >
       Sign in
     </a>
   );
@@ -13,7 +17,11 @@ function SignInButton(props) {
 
 function SignOutButton(props) {
   return (
-    <a className="btn btn-outline-primary" href="#" onClick={props.onClick}>
+    <a
+      className="btn btn-outline-primary"
+      href="#signout"
+      onClick={props.onClick}
+    >
       Sign out
     </a>
   );
@@ -158,7 +166,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    const keycloak = Keycloak("/keycloak.json");
+    const keycloak = Keycloak("./keycloak.json");
     keycloak.init({ onLoad: "check-sso" }).then((authenticated) => {
       if (authenticated) {
         keycloak.loadUserInfo().then((userInfo) => {
