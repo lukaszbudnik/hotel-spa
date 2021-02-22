@@ -1,0 +1,9 @@
+{
+    "realm": "hotel",
+    "auth-server-url": "https://auth.localtest.me/auth/",
+    "ssl-required": "external",
+    "resource": "react",
+    "public-client": true,
+    "confidential-port": 0
+  }
+  
