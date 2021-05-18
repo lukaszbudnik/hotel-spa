@@ -166,7 +166,11 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    const keycloak = Keycloak("./keycloak.json");
+    const keycloak = Keycloak({
+      url: "https://auth.localtest.me/auth/",
+      realm: "hotel",
+      clientId: "react",
+    });
     keycloak.init({ onLoad: "check-sso" }).then((authenticated) => {
       if (authenticated) {
         keycloak.loadUserInfo().then((userInfo) => {
@@ -178,8 +182,9 @@ class App extends React.Component {
           });
         });
       }
-      this.setState({ keycloak: keycloak, authenticated: authenticated });
+      this.setState({ authenticated: authenticated });
     });
+    this.setState({ keycloak: keycloak });
   }
 
   render() {
