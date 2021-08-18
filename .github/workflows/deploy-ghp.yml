@@ -55,6 +55,10 @@ jobs:
           name: production-files
           path: ./build
 
+      - run: pwd
+      - run: ls -l
+      - run: ls -l build
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
