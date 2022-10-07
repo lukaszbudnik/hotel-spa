@@ -166,8 +166,8 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    const keycloak = Keycloak({
-      url: "https://auth.localtest.me/auth/",
+    const keycloak = new Keycloak({
+      url: "https://auth.localtest.me",
       realm: "hotel",
       clientId: "react",
     });
